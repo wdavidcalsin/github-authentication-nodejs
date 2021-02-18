@@ -42,10 +42,10 @@ app.get('/github/callback', (req: Request, res: Response) => {
 });
 
 app.get('/success', async (req, res) => {
-  try {
-    const query = gql`
-      query {
-        repositories(first: 2, privacy: PUBLIC) {
+  const query = gql`
+    query {
+      viewer {
+        repositories(last: 7, orderBy: { field: UPDATED_AT, direction: ASC }) {
           nodes {
             name
             createdAt
@@ -53,15 +53,17 @@ app.get('/success', async (req, res) => {
           }
         }
       }
-    `;
+    }
+  `;
 
-    const client = new GraphQLClient('https://api.github.com/graphql');
-    const requestHeader = client.setHeader(
-      'authorization',
-      `Bearer ${access_token}`,
-    );
+  try {
+    const client = new GraphQLClient('https://api.github.com/graphql', {
+      headers: {
+        authorization: `bearer ${access_token}`,
+      },
+    });
 
-    const data = await client.request(query, requestHeader);
+    const data = await client.request(query);
 
     console.log(JSON.stringify(data, undefined, 2));
     res.send('Se pidio correctamente de GRAPHQL');
