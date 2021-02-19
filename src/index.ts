@@ -43,18 +43,52 @@ app.get('/github/callback', (req: Request, res: Response) => {
 
 app.get('/success', async (req, res) => {
   const query = gql`
-    query {
+    query($last_num_repos: Int!, $first: Int!) {
       viewer {
-        repositories(last: 7, orderBy: { field: UPDATED_AT, direction: ASC }) {
+        avatarUrl
+        repositories(
+          affiliations: [OWNER]
+          last: $last_num_repos
+          isFork: false
+        ) {
           nodes {
             name
             createdAt
+            updatedAt
             url
+            isFork
+            primaryLanguage {
+              name
+            }
+            languages(first: 100) {
+              nodes {
+                name
+              }
+            }
+            defaultBranchRef {
+              name
+              target {
+                ... on Commit {
+                  history(first: $first) {
+                    nodes {
+                      authoredDate
+                      committedDate
+                      message
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     }
   `;
+
+  const variables = {
+    last_num_repos: 2,
+    first: 20,
+  };
 
   try {
     const client = new GraphQLClient('https://api.github.com/graphql', {
@@ -63,10 +97,10 @@ app.get('/success', async (req, res) => {
       },
     });
 
-    const data = await client.request(query);
+    const data = await client.request(query, variables);
 
     console.log(JSON.stringify(data, undefined, 2));
-    res.send('Se pidio correctamente de GRAPHQL');
+    res.json(data);
   } catch (error) {
     res.send(`Algo paso en la peticion con graphql ${error}`);
   }
