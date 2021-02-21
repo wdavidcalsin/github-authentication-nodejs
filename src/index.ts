@@ -105,16 +105,16 @@ app.get('/success', async (req, res) => {
     res.send(`Algo paso en la peticion con graphql ${error}`);
   }
 
-  // axios({
-  //   method: 'get',
-  //   url: `https://api.github.com/user`,
-  //   headers: {
-  //     Authorization: `token ${access_token}`,
-  //   },
-  // }).then((response) => {
-  //   res.send({ userData: response.data });
-  //   // console.log(response.data);
-  // });
+  axios({
+    method: 'get',
+    url: `https://api.github.com/user`,
+    headers: {
+      Authorization: `token ${access_token}`,
+    },
+  }).then((response) => {
+    res.send({ userData: response.data });
+    // console.log(response.data);
+  });
 });
 
 app.listen(port, () => console.log(`Hosting @${port}`));
